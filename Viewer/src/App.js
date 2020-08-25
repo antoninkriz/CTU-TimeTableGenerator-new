@@ -72,7 +72,8 @@ class App extends React.Component {
   render() {
     return (
       <>
-        <h1>TTGen</h1>
+        <h1 className="title">TTGen</h1>
+        <p className="description">First 5 days are an EVEN week, last 5 days are an ODD week</p>
         <div className="tables">
           {
             this.state.tables.map((t, i) => (

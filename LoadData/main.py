@@ -17,7 +17,13 @@ CLIENT = (CLIENT_ID, CLIENT_SECRET)
 
 FACULTY = int(sys.argv[3])
 SEMESTER = sys.argv[4]
-COURSES = sys.argv[5].split(' ')
+
+COURSES = set([x for x in sys.argv[5].split(' ') if x.strip()])
+IGNORED = {
+    'lecture': set([x for x in sys.argv[6].split(' ') if x.strip()]),
+    'tutorial': set([x for x in sys.argv[7].split(' ') if x.strip()]),
+    'laboratory': set([x for x in sys.argv[8].split(' ') if x.strip()]),
+}
 
 """
 AUTH
@@ -55,7 +61,11 @@ semester = next((s for s in list(res_semesters.json()['semesters']) if s['semest
 if semester is None:
     raise Exception('Semester not found')
 
-PARITY = {k: 0 if semester['first_week_parity'] == k else 5 for k in EVEN_ODD}
+# Even week will always be the first one
+PARITY = {
+    EVEN: 0,
+    ODD: 5
+}
 
 # Get weeks
 res_weeks = s.get(f'{SIRIUS_URL}/{SIRIUS_URL_WEEKS}', params={
@@ -94,6 +104,9 @@ for course in COURSES:
 
     for k in events:
         for e in events[k]:
+            if course in IGNORED[e['event_type']]:
+                continue
+
             classes[course][e['event_type']].append({
                 'time': {
                     'week': k,
@@ -142,3 +155,4 @@ def json_serial(x):
 
 result = json.dumps(classes, default=json_serial)
 print(result)
+

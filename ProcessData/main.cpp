@@ -43,8 +43,11 @@ using boost::hash_value;
 using boost::hash_combine;
 using nlohmann::json;
 
-#define NE_730 (false)
-#define NE_915 (false)
+/// Lower score of classes starting at 7:30 or earlier - https://www.730ne.cz
+static bool NE_730 = false;
+
+/// NE730 but for classes before 9:15 AM
+static bool NE_915 = false;
 
 /// Break all loops and stop magic
 static volatile bool keepRunning = true;
@@ -59,9 +62,13 @@ void sigintHandler(int) {
 template<typename T>
 class Cache {
 private:
+    /// Cache storage
     unordered_map<T, shared_ptr<T>> p_data;
 
 public:
+    /// Get an item from and set to a cache
+    /// \param t Item to be cached and retrieved
+    /// \return Shared pointer to a cached item
     shared_ptr<T> cache(T t) {
         if (p_data.count(t))
             return p_data[t];
@@ -72,12 +79,16 @@ public:
     }
 };
 
+/// Class Type
 enum class Type {
     Lecture,
     Tutorial,
     Laboratory
 };
 
+/// String to a Type
+/// \param s String to be parsed
+/// \return Type form a string or an exception
 Type parseType(const string &s) {
     if (s == "lecture")
         return Type::Lecture;
@@ -88,6 +99,9 @@ Type parseType(const string &s) {
     throw invalid_argument("Not a Type value");
 }
 
+/// Type to a string
+/// \param t Type to be converted
+/// \return Type as a string or an exception
 string typeToString(Type t) {
     switch (t) {
         case Type::Lecture:
@@ -101,11 +115,15 @@ string typeToString(Type t) {
     throw invalid_argument("Not a Type value");
 }
 
+/// Odd or even weeks
 enum class Week {
     Odd,
     Even
 };
 
+/// String to a Week
+/// \param s String to be parsed
+/// \return Week form a string or an exception
 Week parseWeek(const string &s) {
     if (s == "odd")
         return Week::Odd;
@@ -114,6 +132,9 @@ Week parseWeek(const string &s) {
     throw invalid_argument("Not a Week value");
 }
 
+/// Week to a string
+/// \param t Week to be converted
+/// \return Week as a string or an exception
 string weekToString(Week w) {
     switch (w) {
         case Week::Odd:
@@ -125,39 +146,63 @@ string weekToString(Week w) {
     throw invalid_argument("Not a Week value");
 }
 
+/// Time class
 class Time {
 public:
+    /// Hours
     int8_t p_hours;
+
+    /// Minutes
     int8_t p_minutes;
 
+    /// Compare time equality
+    /// \param t Time to be compared to
+    /// \return True when equal, false otherwise
     bool operator==(const Time &t) const {
         return p_hours == t.p_hours && p_minutes == t.p_minutes;
     }
 
+    /// Is this time sooner?
+    /// \param t  Time to compare
+    /// \return True when sooner, false otherwise
     bool operator<(const Time &t) const {
         return p_hours < t.p_hours || (p_hours == t.p_hours && p_minutes < t.p_minutes);
     }
 
+    /// Is this time later?
+    /// \param t  Time to compare
+    /// \return True when later, false otherwise
     bool operator>(const Time &t) const {
         return p_hours > t.p_hours || (p_hours == t.p_hours && p_minutes > t.p_minutes);
     }
 
+    /// Is this time equal or sooner?
+    /// \param t  Time to compare
+    /// \return True when equal or sooner, false otherwise
     bool operator<=(const Time &t) const {
         return *this == t || *this < t;
     }
 
+    /// Is this time equal or later?
+    /// \param t  Time to compare
+    /// \return True when equal or later, false otherwise
     bool operator>=(const Time &t) const {
         return *this == t || *this > t;
     }
 
-    int diffMinutes(const Time &t) const {
+    /// Get times difference in minutes
+    /// \param t Time to compare
+    /// \return
+    [[nodiscard]] int diffMinutes(const Time &t) const {
         int minutes1 = p_hours * 60 + p_minutes;
         int minutes2 = t.p_hours * 60 + t.p_minutes;
 
         return abs(minutes1 - minutes2);
     }
 
-    json dumpJson() const {
+    /// Convert a time to JSON
+    /// \return Time as a JSON
+    [[nodiscard]] json dumpJson() const {
         return {
                 {"hours",   p_hours},
                 {"minutes", p_minutes}
@@ -165,6 +210,9 @@ public:
     }
 };
 
+/// Parse string to a time
+/// \param s String to be parsed
+/// \return Time or an exception
 Time parseTime(const string &s) {
     auto is = stringstream(s);
 
@@ -176,13 +224,24 @@ Time parseTime(const string &s) {
     return {(int8_t) h, (int8_t) m};
 }
 
+/// Time of an event
 class EventTime {
 public:
+    /// Is this event in an even or an odd week
     Week p_week;
+
+    /// Day number (0 = Monday, 4 = Friday, 5 = Monday, 9 = Friday)
     int8_t p_day;
+
+    /// Time when this event starts
     Time p_from;
+
+    /// Time when this event ends
     Time p_to;
 
+    /// Is an event time equal with this one?
+    /// \param et EventTime to compare
+    /// \return True when equal, false otherwise
     bool operator==(const EventTime &et) const {
         return p_week == et.p_week
                && p_day == et.p_day
@@ -190,7 +249,9 @@ public:
                && p_to == et.p_to;
     }
 
-    json dumpJson() const {
+    /// Convert en event time to JSON
+    /// \return Event time as a JSON
+    [[nodiscard]] json dumpJson() const {
         return {
                 {"week", weekToString(p_week)},
                 {"day",  (int) p_day},
@@ -202,18 +263,31 @@ public:
 
 class Event {
 public:
+    /// Name of the event
     string p_name;
+
+    /// Parallel name
     string p_parallel;
+
+    /// Type of this event
     Type p_type;
+
+    /// Time of this event
     EventTime p_time;
 
+    /// Is an event equal with this one?
+    /// \param e Event to compare
+    /// \return True when equal, false otherwise
     bool operator==(const Event &e) const {
         return p_name == e.p_name
                && p_parallel == e.p_parallel
+               && p_type == e.p_type
                && p_time == e.p_time;
     }
 
-    json dumpJson() const {
+    /// Convert en event to JSON
+    /// \return Event as a JSON
+    [[nodiscard]] json dumpJson() const {
         return {
                 {"name",     p_name},
                 {"parallel", p_parallel},
@@ -223,19 +297,28 @@ public:
     }
 };
 
+/// Time table class
 class TimeTable {
 private:
+    /// Score of this time table
     double p_score;
+
+    /// Days holding lists of events
     vector<vector<shared_ptr<Event>>> p_days;
 
 public:
-
+    /// Create an empty time table
     TimeTable() {
         p_score = -1;
         p_days = vector<vector<shared_ptr<Event>>>(10);
     }
 
-    bool hasCollision(short day, Time from, Time to) const {
+    /// Would there be a collision for a given time frame?
+    /// \param day Day to read from
+    /// \param from Beginning of the time frame
+    /// \param to End of the time frame
+    /// \return True when collision occurs, false when not
+    [[nodiscard]] bool hasCollision(short day, Time from, Time to) const {
         return any_of(p_days[day].begin(), p_days[day].end(), [&to, &from](const shared_ptr<Event> &ev) {
             auto evFrom = ev->p_time.p_from;
             auto evTo = ev->p_time.p_to;
@@ -250,10 +333,13 @@ public:
         });
     }
 
+    /// Add a new event to the time table.
+    /// Check for collision before using this method - no collision checks happen!
+    /// \param ev Event to be added
     void addEvent(const shared_ptr<Event> &ev) {
         auto &day = p_days[ev->p_time.p_day];
 
-        auto pos = std::lower_bound(day.begin(), day.end(), ev, [](const shared_ptr<Event> &a, const shared_ptr<Event> &b) {
+        auto pos = lower_bound(day.begin(), day.end(), ev, [](const shared_ptr<Event> &a, const shared_ptr<Event> &b) {
             return a->p_time.p_from < b->p_time.p_from || (a->p_time.p_from == b->p_time.p_from && a->p_time.p_to < b->p_time.p_to);
         });
 
@@ -261,6 +347,8 @@ public:
         p_score = -1;
     }
 
+    /// Get (and silently set) a score for this time table
+    /// \return Score of this time table
     double getScore() {
         if (p_score != -1)
             return p_score;
@@ -290,29 +378,28 @@ public:
                 }
             }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "Simplify"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnreachableCode"
+            // Check for classes before and at 7:30 AM
             if (NE_730 && day[0]->p_time.p_from <= Time{7, 30})
                 totalScore += 5;
 
+            // Check for classes before and at 9:15 AM
             if (NE_915 && day[0]->p_time.p_from <= Time{9, 15})
                 totalScore += 1;
-#pragma clang diagnostic pop
-#pragma clang diagnostic pop
 
             // Total time spent
             totalMinutesSpent += day[0]->p_time.p_from.diffMinutes(day[day.size() - 1]->p_time.p_to);
             totalDaysInSchool++;
         }
 
-        totalScore = (totalMinutesSpent / 60.0) * 10 * totalDaysInSchool;
+        // Add total time in school score
+        totalScore += (totalMinutesSpent / 60.0) * 10 * totalDaysInSchool;
 
         return p_score = totalScore;
     }
 
-    json dumpJson() {
+    /// Convert a time table to JSON
+    /// \return Time table as a JSON
+    [[nodiscard]] json dumpJson() const {
         auto jsonEvents = vector<vector<json>>(p_days.size());
 
         for (size_t i = 0; i < p_days.size(); i++)
@@ -320,15 +407,19 @@ public:
                 jsonEvents[i].push_back(event->dumpJson());
 
         return {
-                {"score", this->getScore()},
+                {"score", p_score},
                 {"days", jsonEvents}
         };
     }
 };
 
 namespace std {
+    /// Add hashing for the Time class
     template<>
     struct hash<Time> {
+        /// Create a hash for the Time class
+        /// \param e Time to get the hash for
+        /// \return Hash of the Time class
         size_t operator()(const Time &t) const {
             size_t seed = 0;
             hash_combine(seed, hash_value(t.p_hours));
@@ -337,8 +428,12 @@ namespace std {
         }
     };
 
+    /// Add hashing for the EventTime class
     template<>
     struct hash<EventTime> {
+        /// Create a hash for the EventTime class
+        /// \param e EventTime to get the hash for
+        /// \return Hash of the EventTime class
         size_t operator()(const EventTime &et) const {
             size_t seed = 0;
             hash_combine(seed, hash_value(et.p_week));
@@ -349,8 +444,12 @@ namespace std {
         }
     };
 
+    /// Add hashing for the Event class
     template<>
     struct hash<Event> {
+        /// Create a hash for the Event class
+        /// \param e Event to get the hash for
+        /// \return Hash of the Event class
         size_t operator()(const Event &e) const {
             size_t seed = 0;
             hash_combine(seed, hash_value(e.p_name));
@@ -366,6 +465,10 @@ typedef vector<Parallel> Parallels;
 typedef unordered_map<Type, Parallels> Course;
 typedef unordered_map<string, Course> Data;
 
+/// Build data from a json object
+/// \param j Json to read from
+/// \param cacheEvents Cache to be used
+/// \return Parsed data object
 Data buildData(const json &j, Cache<Event> &cacheEvents) {
     auto dataParsed = Data();
     for (auto&[courseName, courseTypes] : j.items()) {
@@ -407,29 +510,35 @@ Data buildData(const json &j, Cache<Event> &cacheEvents) {
     return dataParsed;
 }
 
+/// Solver class
 class Solver {
 private:
+    /// Best score (so far)
     double p_bestScore;
-    int p_combinations;
+
+    /// Best time tables (so far)
     vector<shared_ptr<TimeTable>> p_tables;
+
+    /// Flattened data
     vector<Parallels> p_flatData;
 
 public:
     explicit Solver(const Data &data) {
         p_bestScore = numeric_limits<double>::max();
-        p_combinations = 1;
 
         for (const auto &[subject, types] : data) {
             for (const auto &[type, parallels] : types) {
                 if (parallels.empty())
                     continue;
 
-                p_combinations *= parallels.size();
                 p_flatData.push_back(parallels);
             }
         }
     }
 
+    /// Recursively solve time tables
+    /// \param timeTable Time table to currently solve
+    /// \param flatPos Position in the flattened data
     void solve(const shared_ptr<TimeTable> &timeTable = make_shared<TimeTable>(), size_t flatPos = 0) {
         for (const auto &parallel : p_flatData[flatPos]) {
             // Kill recursion when SIGINT comes
@@ -439,24 +548,12 @@ public:
             static auto steps = 0;
             steps++;
 
-            // Print progress
-            if (steps % 1000 == 0) {
-                // How long did it take from the start?
-                auto tmr = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
-
-                // Percentage progress of all combinations
-                auto prc = (steps / (double) p_combinations) * 100;
-
-                // Clear current line and print a new one over it
-                cout << "\r\e[K" << flush
-                     << setprecision(5) << fixed << prc << " - " << (tmr / 1000.0) << "s - " << steps << flush;
-            }
-
             // Check for collisions
             auto canAdd = !any_of(parallel.begin(), parallel.end(), [&timeTable](const shared_ptr<Event> &ev) {
                 return timeTable->hasCollision(ev->p_time.p_day, ev->p_time.p_from, ev->p_time.p_to);
             });
 
+            // Collision, skip!
             if (!canAdd)
                 continue;
 
@@ -483,7 +580,9 @@ public:
         }
     }
 
-    json dumpJson() const {
+    /// Convert all best time tables to JSON
+    /// \return All best time tables as a JSON
+    [[nodiscard]] json dumpJson() const {
         auto jsonTables = vector<json>();
 
         for (const auto &table : p_tables)
@@ -494,21 +593,37 @@ public:
 };
 
 
-int main() {
+int main(int argc, char *argv[]) {
     // Handle SIGINT
     signal(SIGINT, sigintHandler);
 
+    // Parse args
+    auto args = vector<string>(argv + 1, argv + argc);
+    for (const auto &arg : args) {
+        if (arg == "ne730") {
+            NE_730 = true;
+        } else if (arg == "ne915") {
+            NE_915 = true;
+        } else {
+            cout << "Unknown parameter!" << endl;
+            return 1;
+        }
+    }
+
+    // Parse JSON from STDIN
     json j;
     try {
         cin >> j;
     } catch (error_t) {
-        cout << "Json can not be parsed";
+        cout << "Json can not be parsed" << endl;
         return 1;
     }
 
+    // Build data and cache
     auto cacheEvents = Cache<Event>();
     auto data = buildData(j, cacheEvents);
 
+    // Solve time tables
     auto solver = Solver(data);
     solver.solve();
 
@@ -516,3 +631,4 @@ int main() {
 
     return 0;
 }
+

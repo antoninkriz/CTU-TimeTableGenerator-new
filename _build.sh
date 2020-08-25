@@ -45,7 +45,7 @@ printf "\n===BUILDING - LoadData===\n\n"
 DIR_LOADDATA="$DIR_BUILD/LoadData"
 mkdir "$DIR_LOADDATA"
 cp LoadData/main.py "$DIR_LOADDATA/main.py"
-$ret = $?
+ret=$?
 if [ $ret -ne 0 ]; then
     printf "\n===ERROR: Building LoadData failed===\n\n"
     echo "$DATA_LOAD"
@@ -58,14 +58,14 @@ DIR_PROCESSDATA="$DIR_BUILD/ProcessData"
 mkdir "$DIR_PROCESSDATA"
 cd "$DIR_PROCESSDATA"
 cmake -DCMAKE_BUILD_TYPE=Release "$HERE/ProcessData"
-$ret = $?
+ret=$?
 if [ $ret -ne 0 ]; then
     printf "\n===ERROR: Building ProcessData (CMake) failed===\n\n"
     echo "$DATA_LOAD"
     exit 1
 fi
 make
-$ret = $?
+ret=$?
 if [ $ret -ne 0 ]; then
     printf "\n===ERROR: Building ProcessData (Make) failed===\n\n"
     echo "$DATA_LOAD"
@@ -80,14 +80,14 @@ mkdir "$DIR_VIEWER"
 cp -r Viewer/* "$DIR_VIEWER"
 cd "$DIR_VIEWER"
 yarn install
-$ret = $?
+ret=$?
 if [ $ret -ne 0 ]; then
     printf "\n===ERROR: Building Viewer (install) failed===\n\n"
     echo "$DATA_LOAD"
     exit 1
 fi
 yarn run build
-$ret = $?
+ret=$?
 if [ $ret -ne 0 ]; then
     printf "\n===ERROR: Building Viewer (build) failed===\n\n"
     echo "$DATA_LOAD"

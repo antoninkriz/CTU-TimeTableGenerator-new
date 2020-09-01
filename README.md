@@ -8,6 +8,8 @@ New Time Tables Generator for CTU (CVUT).
 
 ### Requirements
 
+* [Git](https://git-scm.com/) 2.25+ (`sudo apt-get install git`)
+* [Boost Lib](https://www.boost.org/) 1.65+ (`sudo apt-get install libboost-all-dev`)
 * [GCC](https://gcc.gnu.org/) 7.5+ (`sudo apt-get install gcc g++`)
 * [CMake](https://cmake.org/) 3.17+ (how to install on Ubuntu [here](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu))
 * [Python 3.8+](https://www.python.org/) (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-python-3-8-on-ubuntu-18-04/))

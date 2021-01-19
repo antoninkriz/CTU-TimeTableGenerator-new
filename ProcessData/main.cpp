@@ -1,6 +1,5 @@
 #include <csignal>
 #include <iostream>
-#include <iomanip>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -18,9 +17,6 @@ using std::istream;
 using std::flush;
 using std::endl;
 using std::fixed;
-using std::setw;
-using std::setfill;
-using std::setprecision;
 using std::size_t;
 using std::invalid_argument;
 using std::string;
@@ -69,7 +65,7 @@ public:
     /// Get an item from and set to a cache
     /// \param t Item to be cached and retrieved
     /// \return Shared pointer to a cached item
-    shared_ptr<T> cache(T t) {
+    constexpr shared_ptr<T> cache(T t) {
         if (p_data.count(t))
             return p_data[t];
 
@@ -155,45 +151,49 @@ public:
     /// Minutes
     int8_t p_minutes;
 
+    constexpr Time() : p_hours(0), p_minutes(0) {}
+
+    constexpr Time(int8_t hours, int8_t minutes) : p_hours(hours), p_minutes(minutes) {}
+
     /// Compare time equality
     /// \param t Time to be compared to
     /// \return True when equal, false otherwise
-    bool operator==(const Time &t) const {
+    constexpr bool operator==(const Time &t) const {
         return p_hours == t.p_hours && p_minutes == t.p_minutes;
     }
 
     /// Is this time sooner?
     /// \param t  Time to compare
     /// \return True when sooner, false otherwise
-    bool operator<(const Time &t) const {
+    constexpr bool operator<(const Time &t) const {
         return p_hours < t.p_hours || (p_hours == t.p_hours && p_minutes < t.p_minutes);
     }
 
     /// Is this time later?
     /// \param t  Time to compare
     /// \return True when later, false otherwise
-    bool operator>(const Time &t) const {
+    constexpr bool operator>(const Time &t) const {
         return p_hours > t.p_hours || (p_hours == t.p_hours && p_minutes > t.p_minutes);
     }
 
     /// Is this time equal or sooner?
     /// \param t  Time to compare
     /// \return True when equal or sooner, false otherwise
-    bool operator<=(const Time &t) const {
+    constexpr bool operator<=(const Time &t) const {
         return *this == t || *this < t;
     }
 
     /// Is this time equal or later?
     /// \param t  Time to compare
     /// \return True when equal or later, false otherwise
-    bool operator>=(const Time &t) const {
+    constexpr bool operator>=(const Time &t) const {
         return *this == t || *this > t;
     }
 
     /// Get times difference in minutes
     /// \param t Time to compare
     /// \return
-    [[nodiscard]] int diffMinutes(const Time &t) const {
+    [[nodiscard]] constexpr int diffMinutes(const Time &t) const {
         int minutes1 = p_hours * 60 + p_minutes;
         int minutes2 = t.p_hours * 60 + t.p_minutes;
 
@@ -356,39 +356,58 @@ public:
         double totalScore = 0;
 
         // Score based on total hours and days spent in school
+        int totalEventMinutes = 0;
         int totalMinutesSpent = 0;
         int totalDaysInSchool = 0;
         for (const auto &day : p_days) {
             // Empty days
             if (day.empty()) {
-                totalScore -= 30;
+                totalScore -= 200;
                 continue;
             }
 
             // Lectures only
-            int lecturesCount = count_if(day.begin(), day.end(), [](const shared_ptr<Event>& ev) { return ev->p_type == Type::Lecture; });
+            int lecturesCount = count_if(day.begin(), day.end(), [](const shared_ptr<Event> &ev) { return ev->p_type == Type::Lecture; });
             if (lecturesCount == day.size()) {
                 switch (lecturesCount) {
                     case 1:
-                        totalScore -= 15;
+                        totalScore -= 30;
                     case 2:
-                        totalScore -= 10;
+                        totalScore -= 20;
                     default:
-                        totalScore -= 5;
+                        totalScore -= 10;
                 }
             }
 
             // Check for classes before and at 7:30 AM
             if (NE_730 && day[0]->p_time.p_from <= Time{7, 30})
-                totalScore += 5;
+                totalScore += 50;
 
             // Check for classes before and at 9:15 AM
             if (NE_915 && day[0]->p_time.p_from <= Time{9, 15})
-                totalScore += 1;
+                totalScore += 25;
+
+            // Total time spent effectively
+            for (const auto &event : day)
+                totalEventMinutes += event->p_time.p_from.diffMinutes(event->p_time.p_to);
 
             // Total time spent
             totalMinutesSpent += day[0]->p_time.p_from.diffMinutes(day[day.size() - 1]->p_time.p_to);
             totalDaysInSchool++;
+
+            // Penalize days with less classes in a day, boost days with more classes in a day
+            int classesScore = 0;
+            if (day.size() <= 1)
+                classesScore += 1;
+            else if (day.size() <= 3)
+                classesScore -= 1;
+            else if (day.size() >= 4)
+                classesScore -= 2;
+            totalScore -= classesScore;
+
+            // Penalize days with classes till 16:00
+            if (day[day.size() - 1]->p_time.p_to <= Time(16, 00) && day.size() < 3)
+                totalScore += 1;
         }
 
         // Add total time in school score
@@ -408,7 +427,7 @@ public:
 
         return {
                 {"score", p_score},
-                {"days", jsonEvents}
+                {"days",  jsonEvents}
         };
     }
 };

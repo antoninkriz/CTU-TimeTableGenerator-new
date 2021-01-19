@@ -8,6 +8,9 @@
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3"
   },
+  "devDependencies": {
+    "pnpm": "^5.15.1"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

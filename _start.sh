@@ -38,7 +38,7 @@ DIR_BUILD=${config[BUILD]}
 #######
 
 printf "\n===RUNNING - Loading data...===\n\n"
-DATA_LOAD=$(python3.8 "$DIR_BUILD/LoadData/main.py" "${config[CLIENT_ID]}" "${config[CLIENT_SECRET]}" "${config[FACULTY]}" "${config[SEMESTER]}" "${config[COURSES]}" "${config[IGNORE_LECT]}" "${config[IGNORE_TUTS]}" "${config[IGNORE_LABS]}")
+DATA_LOAD=$(python3 "$DIR_BUILD/LoadData/main.py" "${config[CLIENT_ID]}" "${config[CLIENT_SECRET]}" "${config[FACULTY]}" "${config[SEMESTER]}" "${config[COURSES]}" "${config[IGNORE_LECT]}" "${config[IGNORE_TUTS]}" "${config[IGNORE_LABS]}")
 ret=$?
 if [ $ret -ne 0 ]; then
     printf "\n===ERROR: Loading data failed===\n\n"

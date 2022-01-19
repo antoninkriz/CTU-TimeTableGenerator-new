@@ -56,6 +56,7 @@ if [ $ret -ne 0 ]; then
 fi
 
 printf "\n===RUNNING - Saving data...===\n\n"
+mkdir -p "$DIR_BUILD/run/"
 echo "$DATA_PROCESS" > "$DIR_BUILD/run/timetables.json"
 
 printf "\n===DONE - Starting web server===\n\n"

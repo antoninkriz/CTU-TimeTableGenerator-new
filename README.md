@@ -13,7 +13,7 @@ New Time Tables Generator for CTU (CVUT).
 * [GCC](https://gcc.gnu.org/) 7.5+ (`sudo apt-get install gcc g++`)
 * [CMake](https://cmake.org/) 3.17+ (how to install on Ubuntu [here](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu))
 * [Python 3.8+](https://www.python.org/) (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-python-3-8-on-ubuntu-18-04/))
-* [Node.js](https://nodejs.org/) 12+ (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-node-js-on-ubuntu-20-04/#installing-nodejs-and-npm-from-nodesource))
+* [Node.js](https://nodejs.org/) 16+ (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-node-js-on-ubuntu-20-04/#installing-nodejs-and-npm-from-nodesource))
 * [Yarn](https://yarnpkg.com/) (how to install on Ubutu [here](https://classic.yarnpkg.com/en/docs/install/#debian-stable))
 
 ### Get Siriuis Time Table API credentials

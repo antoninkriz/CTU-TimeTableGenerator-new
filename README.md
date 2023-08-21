@@ -8,13 +8,13 @@ New Time Tables Generator for CTU (CVUT).
 
 ### Requirements
 
-* [Git](https://git-scm.com/) 2.25+ (`sudo apt-get install git`)
-* [Boost Lib](https://www.boost.org/) 1.65+ (`sudo apt-get install libboost-all-dev`)
-* [GCC](https://gcc.gnu.org/) 7.5+ (`sudo apt-get install gcc g++`)
-* [CMake](https://cmake.org/) 3.17+ (how to install on Ubuntu [here](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu))
-* [Python 3.8+](https://www.python.org/) (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-python-3-8-on-ubuntu-18-04/))
-* [Node.js](https://nodejs.org/) 16+ (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-node-js-on-ubuntu-20-04/#installing-nodejs-and-npm-from-nodesource))
-* [Yarn](https://yarnpkg.com/) (how to install on Ubutu [here](https://classic.yarnpkg.com/en/docs/install/#debian-stable))
+* [Git](https://git-scm.com/) (`sudo apt-get install git`) - tested on version 2.41
+* [Boost Lib](https://www.boost.org/) (`sudo apt-get install libboost-all-dev`) - tested on version 1.81
+* [GCC](https://gcc.gnu.org/) (`sudo apt-get install gcc g++`) - tested on version 13.2.1
+* [CMake](https://cmake.org/) (how to install on Ubuntu [here](https://askubuntu.com/questions/829310/how-to-upgrade-cmake-in-ubuntu)) - tested on version 3.27.1
+* [Python 3](https://www.python.org/) (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-python-3-8-on-ubuntu-18-04/)) - tested on version 3.11.3
+* [Node.js 18](https://nodejs.org/) (how to install on Ubuntu [here](https://linuxize.com/post/how-to-install-node-js-on-ubuntu-20-04/#installing-nodejs-and-npm-from-nodesource)) - tested on version 18.16.0
+* [Yarn](https://yarnpkg.com/) (how to install on Ubutu [here](https://classic.yarnpkg.com/en/docs/install/#debian-stable)) - tested on version 1.22.19
 
 ### Get Siriuis Time Table API credentials
 

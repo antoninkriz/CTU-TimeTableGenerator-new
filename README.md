@@ -1,3 +1,7 @@
+> *This project has been replaced by newer, faster and much more user friendly [CTU-TimeTable-Generator](https://github.com/antoninkriz/CTU-TimeTable-Generator)*
+
+---
+
 ![](./docs/example.png)
 
 # CTU-TimeTableGenerator-new
